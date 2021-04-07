@@ -1,5 +1,5 @@
 module.exports = {
   user: 'tonyuce',
   repo: 'github-react',
-  token: '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'
+  token: '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'
 }
