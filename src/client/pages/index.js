@@ -1,31 +1,73 @@
 import React, { useState, useEffect } from 'react';
-import Head from 'next/head'
-import styles from '../../../styles/Home.module.css'
+import DataTable, { createTheme } from 'react-data-table-component';
+import config from '../common/config';
 import styled from 'styled-components';
-import DataTable from 'react-data-table-component';
+import memoize from 'memoize-one';
+import { useRouter } from 'next/router';
+
+const pageTitle = 'GitHub Commits';
+
+const Heading = styled.h1`
+  font-size: 1.5em;
+  text-align: center;
+  color: #db7093;
+  margin: 20 auto;
+`;
+
+const Button = styled.button`
+  background-color:#268bd2;
+  color: #ffffff;
+  border: 0px;
+  outfit:none;
+  cursor: pointer;
+  padding: 6px 8px;
+  cursor: pointer;
+  border-radius: 3px;
+  margin-right: 10px;
+`;
+
+createTheme('solarized', {
+  text: {
+    primary: '#268bd2',
+    secondary: '#2aa198',
+  },
+  background: {
+    default: '#002b36',
+  },
+  context: {
+    background: '#cb4b16',
+    text: '#FFFFFF',
+  },
+  divider: {
+    default: '#073642',
+  },
+  action: {
+    button: 'rgba(0,0,0,.54)',
+    hover: 'rgba(0,0,0,.08)',
+    disabled: 'rgba(0,0,0,.12)',
+  },
+});
 
 const customStyles = {
-  rows: {
-    style: {
-      minHeight: '72px', // override the row height
-    }
-  },
   headCells: {
     style: {
-      paddingLeft: '8px', // override the cell padding for head cells
+      paddingLeft: '8px', 
       paddingRight: '8px',
+      fontSize: '24px',
+      fontWeight: 800,
+      width: '100px'
     },
   },
   cells: {
     style: {
-      paddingLeft: '8px', // override the cell padding for data cells
+      paddingLeft: '8px',
       paddingRight: '8px',
+      width: '100px'
     },
   },
 };
 
-//const data = [{ id: 1, title: 'Conan the Barbarian', year: '1982' },{ id: 1, title: 'Conan the Barbarian', year: '1982' },{ id: 1, title: 'Conan the Barbarian', year: '1982' }];
-const columns = [
+const columns = memoize(handleAction => [
   {
     name: 'Auther',
     selector: 'author',
@@ -42,21 +84,23 @@ const columns = [
     sortable: true,
   },
   {
-    name: 'URL',
-    selector: 'url',
-    sortable: false,
-  },
-];
-const Title = styled.h1`
-  font-size: 1.5em;
-  text-align: center;
-  color: palevioletred;
-`;
+    cell: (row) => <Button data-url={row.url} raised primary onClick={handleAction}>View Details</Button>,
+    ignoreRowClick: false,
+    allowOverflow: true,
+    button: true,
+  }
+]);
 
 export default function Home() {
   const [rows, setRows] = useState([]); 
+  const router = useRouter();
+
   useEffect(() => {
-      fetch('https://api.github.com/repos/tonyuce/github-react/commits')
+      fetch(`https://api.github.com/repos/${config.user}/${config.repo}/commits`, {
+        headers: new Headers({
+                'Authorization': 'token ' + config.token,
+        })
+    })
       .then(response =>{ 
         console.log('response');
         console.log(response)
@@ -71,20 +115,27 @@ export default function Home() {
             author: item.commit.author.name,
             date: item.commit.author.date,
             message: item.commit.message,
-            url: item.url,
-          });
-          setRows(tableRows);
+            url: item.sha,
+          }); 
         });
-      });  
+        setRows(tableRows);
+      }).catch(err => console.log(err));    
   }, []);
+  const updateState = state => {
+    const commitId = state.target.dataset.url;
+    router.push(`/details?id=${commitId}`, undefined, { shallow: true });
+  }
   return (
     <>
-      <Title>Done</Title>
+      <Heading dangerouslySetInnerHTML={{__html: pageTitle}} />
       <DataTable
         title=""
-        columns={columns}
         data={rows}
         customStyles={customStyles}
+        theme="solarized"
+        pagination={true}
+        columns={columns(updateState)}
+        onSelectedRowsChange={updateState}
       />
     </>
   )
