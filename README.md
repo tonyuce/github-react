@@ -4,6 +4,10 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 First, run the development server:
 
+Go to src -> client -> common.  Open Config.js
+
+Add user, repo and token of Git Repo where you need to integrate
+
 ```bash
 npm run dev
 # or

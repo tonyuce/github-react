@@ -91,7 +91,7 @@ const columns = memoize(handleAction => [
   }
 ]);
 
-export default function Home() {
+ const Home = () => {
   const [rows, setRows] = useState([]); 
   const router = useRouter();
 
@@ -140,3 +140,5 @@ export default function Home() {
     </>
   )
 }
+
+export default Home;
