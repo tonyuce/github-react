@@ -3,9 +3,3 @@ describe('Home Page', () => {
         jest.mock('./index', () => 'Home');
     });
 });
-
-describe('Details Page', () => {
-    test('Details mock', () => {
-        jest.mock('./details', () => 'Home');
-    });
-});
